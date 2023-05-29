@@ -1,0 +1,13 @@
+diff --git a/backend/drm/meson.build b/backend/drm/meson.build
+index 7bde50c..134ec39 100644
+--- a/backend/drm/meson.build
++++ b/backend/drm/meson.build
+@@ -3,7 +3,7 @@ if hwdata.found()
+ 	hwdata_dir = hwdata.get_variable(pkgconfig: 'pkgdatadir')
+ 	pnp_ids = files(hwdata_dir / 'pnp.ids')
+ else
+-	pnp_ids = files('/usr/share/hwdata/pnp.ids')
++	pnp_ids = files('/app/usr/share/hwdata/pnp.ids')
+ endif
+ 
+ pnpids_c = custom_target(

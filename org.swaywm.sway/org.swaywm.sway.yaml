@@ -1,0 +1,230 @@
+#
+# how to use?
+#
+#   to test applications with this sway package set WAYLAND_DISPLAY correctly
+#     usually it will be WAYLAND_DISPLAY=$XDG_RUNTIME_DIR/app/org.swaywm.sway/wayland-1
+#   for example:
+#     $ env WAYLAND_DISPLAY=$XDG_RUNTIME_DIR/app/org.swaywm.sway/wayland-1 \
+#         alacritty
+#
+#   to use with other flatpak app you need also to give access to $XDG_RUNTIME_DIR/app/org.swaywm.sway
+#   for example:
+#     $ flatpak run \
+#         --filesystem=xdg-run/app/org.swaywm.sway \
+#         --env=WAYLAND_DISPLAY=$XDG_RUNTIME_DIR/app/org.swaywm.sway/wayland-1 \
+#         org.gnome.gedit
+#
+app-id: org.swaywm.sway
+runtime: org.freedesktop.Platform
+runtime-version: '22.08'
+sdk: org.freedesktop.Sdk
+command: sway.sh
+finish-args:
+  - --device=dri
+  - --filesystem=host
+  - --share=ipc
+  - --allow=bluetooth
+  - --device=dri
+  - --share=network
+  - --socket=x11
+  - --socket=wayland
+  - --socket=cups
+  - --socket=pcsc
+  - --socket=ssh-auth
+  - --socket=system-bus
+  - --socket=pulseaudio
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /usr/share/pkgconfig
+  - /usr/share/hwdata
+  - '*.pc'
+  - '*.a'
+  - '*.la'
+  - '.ref'
+modules:
+  - name: sway
+    buildsystem: meson
+    config-opts:
+      - --libdir=lib
+      - -Dwerror=false
+      - -Ddefault-wallpaper=true
+      - -Dxwayland=enabled
+      - -Dtray=enabled
+      - -Dgdk-pixbuf=enabled
+    sources:
+      - type: git
+        url: https://github.com/swaywm/sway.git
+        tag: '1.8.1'
+    modules:
+      - name: json-c
+        buildsystem: cmake
+        config-opts:
+        - -DCMAKE_BUILD_TYPE=None
+        - -DENABLE_THREADING=ON
+        - -DENABLE_RDRAND=OFF
+        sources:
+        - type: git
+          tag: json-c-0.16-20220414
+          url: https://github.com/json-c/json-c.git
+        cleanup:
+        - "/lib/cmake"
+
+      - name: wlroots
+        buildsystem: meson
+        config-opts:
+          - --libdir=lib
+          - -Dxwayland=enabled
+          - -Dexamples=false
+        sources:
+          - type: git
+            url: https://gitlab.freedesktop.org/wlroots/wlroots.git
+            tag: 0.16.2
+          - type: patch
+            path: wlroots-hwdata.patch
+        modules:
+          - name: meson
+            buildsystem: simple
+            build-commands:
+            - python setup.py build
+            - python setup.py install --skip-build --prefix=/app --root=/ --optimize=1
+            sources:
+            - type: git
+              tag: 1.1.1
+              url: https://github.com/mesonbuild/meson.git
+            cleanup:
+              - "*"
+          - name: libseat
+            buildsystem: meson
+            config-opts:
+              - --libdir=lib
+            sources:
+              - type: git
+                url: https://git.sr.ht/~kennylevinsen/seatd
+                tag: 0.7.0
+          - name: hwdata
+            make-install-args:
+              - DESTDIR=/app
+              - blacklist=false
+            sources:
+              - type: git
+                url: https://github.com/vcrhonek/hwdata.git
+                tag: v0.370
+          - name: libdrm
+            buildsystem: meson
+            config-opts:
+              - --libdir=lib
+            sources:
+              - type: git
+                url: https://gitlab.freedesktop.org/mesa/drm.git
+                tag: libdrm-2.4.115
+          - name: libinput
+            buildsystem: meson
+            config-opts:
+              - -Dlibwacom=false
+              - -Ddebug-gui=false
+              - -Dtests=false
+              - --libexec=lib
+              - --libdir=lib
+            sources:
+              - type: git
+                tag: 1.23.0
+                url: https://gitlab.freedesktop.org/libinput/libinput.git
+            modules:
+              - name: mtdev
+                config-opts:
+                  - --disable-static
+                sources:
+                  - type: archive
+                    url: https://bitmath.org/code/mtdev/mtdev-1.1.6.tar.gz
+                    sha256: 1325f389a2f25cd5f5a8ea4d29aad24aa7c3ec30401d679400dd79eb9c0a8dbb
+                    x-checker-data:
+                      type: anitya
+                      project-id: 8868
+                      stable-only: true
+                      url-template: https://bitmath.org/code/mtdev/mtdev-$version.tar.bz2
+              - name: libevdev
+                buildsystem: meson
+                config-opts:
+                  - "-Dtests=disabled"
+                  - "-Ddocumentation=disabled"
+                  - --libdir=lib
+                sources:
+                  - type: git
+                    tag: libevdev-1.12.1
+                    url: https://gitlab.freedesktop.org/libevdev/libevdev.git
+          - name: wayland
+            buildsystem: meson
+            config-opts:
+              - --libdir=lib
+              - -Dtests=false
+              - -Ddocumentation=false
+            sources:
+              - type: git
+                url: https://gitlab.freedesktop.org/wayland/wayland.git
+                tag: 1.22.0
+          - name: xorg-xwayland
+            buildsystem: meson
+            config-opts:
+              - --libdir=lib
+              - -Dxdm-auth-1=false
+              - -Dsecure-rpc=false
+              - -Ddri3=true
+            sources:
+              - type: git
+                url: https://gitlab.freedesktop.org/xorg/xserver.git
+                tag: xwayland-23.1.1
+            modules:
+              - name: libxcb
+                sources:
+                  - type: git
+                    tag: libxcb-1.15
+                    url: https://gitlab.freedesktop.org/xorg/lib/libxcb.git
+              - name: libxcvt
+                buildsystem: meson
+                config-opts:
+                  - --libdir=lib
+                sources:
+                  - type: git
+                    tag: libxcvt-0.1.2
+                    url: https://gitlab.freedesktop.org/xorg/lib/libxcvt.git
+              - name: libxfont2
+                sources:
+                  - type: git
+                    tag: libXfont2-2.0.6
+                    url: https://gitlab.freedesktop.org/xorg/lib/libxfont.git
+                modules:
+                  - name: xtrans
+                    sources:
+                      - type: git
+                        tag: xtrans-1.4.0
+                        url: https://gitlab.freedesktop.org/xorg/lib/libxtrans.git
+                  - name: xorgproto
+                    sources:
+                      - type: git
+                        tag: xorgproto-2022.2
+                        url: https://gitlab.freedesktop.org/xorg/proto/xorgproto.git
+                  - name: fontenc
+                    sources:
+                      - type: archive
+                        url: https://xorg.freedesktop.org/archive/individual/lib/libfontenc-1.1.7.tar.gz
+                        sha256: 5e5f210329823f08f97bfe9fd5b4105070c789bc5aef88ce01d86d8203d4aa9f
+                        modules:
+                          - name: xorg-font-util
+                            sources:
+                              - type: git
+                                tag: font-util-1.4.0
+                                url: https://gitlab.freedesktop.org/xorg/font/util.git
+  - name: package
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 sway.sh -t /app/bin/
+    sources:
+      - type: script
+        dest-filename: sway.sh
+        commands:
+          - |
+            export WAYLAND_DISPLAY=$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY
+            export SWAYSOCK=$XDG_RUNTIME_DIR/app/org.swaywm.sway/sway-ipc.sock
+            export XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR/app/org.swaywm.sway
+            exec sway "$@"
