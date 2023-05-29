@@ -46,7 +46,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ env.timestamp }}
           release_name: >
             Sway flatpak from ${{ github.ref }} on ${{ env.date }}
           draft: true
