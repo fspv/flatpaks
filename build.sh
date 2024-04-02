@@ -15,7 +15,7 @@ function build_flatpak() {
         --force-clean \
         --state-dir=${DIR}/flatpak-builder \
         --repo=${DIR}/flatpak-repo \
-        ${DIR}/flatpak-target ${SRC_DIR}/flatpak.yaml
+        ${DIR}/flatpak-target ${SRC_DIR}/${SRC_DIR}.yaml
     flatpak build-bundle ${DIR}/flatpak-repo sway.flatpak org.swaywm.sway
 }
 
