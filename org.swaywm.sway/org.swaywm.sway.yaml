@@ -19,6 +19,10 @@ runtime: org.freedesktop.Platform
 runtime-version: '22.08'
 sdk: org.freedesktop.Sdk
 command: sway.sh
+build-options:
+  # hwdata doesn't respect all the env variables and places the package in the
+  # wrong location
+  append-pkg-config-path: /app/usr/share/pkgconfig
 finish-args:
   - --device=dri
   - --filesystem=host
@@ -89,6 +93,11 @@ modules:
               - type: git
                 tag: 1.34
                 url: https://gitlab.freedesktop.org/wayland/wayland-protocols.git
+          - name: libxcb-errors
+            sources:
+              - type: git
+                tag: xcb-util-errors-1.0.1
+                url: https://gitlab.freedesktop.org/xorg/lib/libxcb-errors.git
           - name: libliftoff
             buildsystem: meson
             sources:
@@ -104,14 +113,14 @@ modules:
               - type: patch
                 path: libdisplay-info-hwdata.patch
             modules:
-              - name: hwdata2
+              - name: hwdata
                 make-install-args:
                   - DESTDIR=/app
                   - blacklist=false
                 sources:
                   - type: git
                     url: https://github.com/vcrhonek/hwdata.git
-                    tag: v0.370
+                    tag: v0.380
           - name: meson
             buildsystem: simple
             build-commands:
@@ -119,7 +128,7 @@ modules:
             - python setup.py install --skip-build --prefix=/app --root=/ --optimize=1
             sources:
             - type: git
-              tag: 1.1.1
+              tag: 1.4.0
               url: https://github.com/mesonbuild/meson.git
             cleanup:
               - "*"
@@ -131,14 +140,6 @@ modules:
               - type: git
                 url: https://git.sr.ht/~kennylevinsen/seatd
                 tag: 0.8.0
-          - name: hwdata
-            make-install-args:
-              - DESTDIR=/app
-              - blacklist=false
-            sources:
-              - type: git
-                url: https://github.com/vcrhonek/hwdata.git
-                tag: v0.370
           - name: libdrm
             buildsystem: meson
             config-opts:
@@ -164,6 +165,9 @@ modules:
                 config-opts:
                   - --disable-static
                 sources:
+                  # - type: git
+                  #   url: https://bitmath.org/git/mtdev.git
+                  #   tag: v1.1.6
                   - type: archive
                     url: https://bitmath.org/code/mtdev/mtdev-1.1.6.tar.gz
                     sha256: 1325f389a2f25cd5f5a8ea4d29aad24aa7c3ec30401d679400dd79eb9c0a8dbb
