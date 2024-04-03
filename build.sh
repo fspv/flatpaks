@@ -16,6 +16,8 @@ function build_flatpak() {
         --state-dir=${DIR}/flatpak-builder \
         --repo=${DIR}/flatpak-repo \
         ${DIR}/flatpak-target ${SRC_DIR}/${SRC_DIR}.yaml
+        # --build-shell=swayidle \
+        # --stop-at=swayidle \
     flatpak build-bundle ${DIR}/flatpak-repo sway.flatpak org.swaywm.sway
 }
 

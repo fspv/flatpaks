@@ -254,6 +254,30 @@ modules:
                               - type: git
                                 tag: font-util-1.4.0
                                 url: https://gitlab.freedesktop.org/xorg/font/util.git
+  - name: swayidle
+    buildsystem: meson
+    config-opts: []
+    sources:
+      - type: git
+        url: https://github.com/swaywm/swayidle.git
+        tag: 1.8.0
+    modules:
+      - name: wayland
+        buildsystem: meson
+        config-opts:
+          - --libdir=lib
+          - -Dtests=false
+          - -Ddocumentation=false
+        sources:
+          - type: git
+            url: https://gitlab.freedesktop.org/wayland/wayland.git
+            tag: 1.22.0
+      - name: wayland-protocols
+        buildsystem: meson
+        sources:
+          - type: git
+            tag: 1.34
+            url: https://gitlab.freedesktop.org/wayland/wayland-protocols.git
   - name: package
     buildsystem: simple
     build-commands:
