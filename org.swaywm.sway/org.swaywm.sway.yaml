@@ -87,7 +87,7 @@ modules:
             buildsystem: meson
             sources:
               - type: git
-                tag: 1.45
+                tag: "1.45"
                 url: https://gitlab.freedesktop.org/wayland/wayland-protocols.git
           - name: libxcb-errors
             sources:
@@ -300,7 +300,7 @@ modules:
         buildsystem: meson
         sources:
           - type: git
-            tag: 1.45
+            tag: "1.45"
             url: https://gitlab.freedesktop.org/wayland/wayland-protocols.git
   - name: package
     buildsystem: simple
