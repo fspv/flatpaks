@@ -8,7 +8,7 @@ jobs:
     name: "Flatpak"
     runs-on: ubuntu-latest
     container:
-      image: bilelmoussaoui/flatpak-github-actions:freedesktop-22.08
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
       options: --privileged
     strategy:
       matrix:
@@ -24,45 +24,30 @@ jobs:
         run: echo "timestamp=$(date +'%s')" >> $GITHUB_ENV
       - name: Test Times
         run: echo "${{ env.date}}-${{ env.timestamp }}"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # Docker is required by the docker/setup-qemu-action which enables emulation
       - name: Install deps
         run: |
           dnf -y install docker
       - name: Set up QEMU
         id: qemu
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
-      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6.1
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6.4
         with:
           bundle: sway.flatpak
           manifest-path: org.swaywm.sway/org.swaywm.sway.yaml
           cache-key: flatpak-builder-${{ github.sha }}
           arch: ${{ matrix.arch }}
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.timestamp }}
-          release_name: >
+          name: >
             Sway flatpak from ${{ github.ref }} on ${{ env.date }}
           draft: true
           prerelease: true
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./sway.flatpak
-          asset_name: sway.flatpak
-          asset_content_type: application/octet-stream
-      - name: Publish release
-        uses: StuYarrow/publish-release@v1.1.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          id: ${{ steps.create_release.outputs.id }}
+          files: ./sway.flatpak

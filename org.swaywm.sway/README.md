@@ -1,28 +1,6 @@
 # Test run
 
-```sh
-export QT_QPA_PLATFORM=wayland  
-export QT_QPA_PLATFORMTHEME=gtk3
-export ECORE_EVAS_ENGINE=wayland_egl
-export ELM_ENGINE=wayland_egl         
-export SDL_VIDEODRIVER=wayland          
-export _JAVA_AWT_WM_NONREPARENTING=1                                                                 
-export MOZ_ENABLE_WAYLAND=1                     
-
-export GTK_IM_MODULE=ibus             
-export QT_IM_MODULE=ibus                          
-export XMODIFIERS=@im=ibus      
-
-export XDG_CURRENT_DESKTOP=sway                                                                      
-APP=$(flatpak info -l org.swaywm.sway)/files
-export LD_LIBRARY_PATH="${APP}/lib:${LD_LIBRARY_PATH}"
-export PATH="${APP}/bin:${PATH}"
-echo "MANDATORY_MANPATH ${APP}/share/man" > ${HOME}/.manpath
-export WLR_XWAYLAND=${APP}/bin/Xwayland
-export LIBINPUT_QUIRKS_DIR=${APP}/share/libinput
-
-sway --verbose
-```
+Run `./test.sh` to test that sway starts up. It should be done after flatpak is successfully built and installed.
 
 # Known issues
 

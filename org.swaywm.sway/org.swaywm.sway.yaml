@@ -16,7 +16,7 @@
 #
 app-id: org.swaywm.sway
 runtime: org.freedesktop.Platform
-runtime-version: '22.08'
+runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
 command: sway.sh
 build-options:
@@ -53,13 +53,12 @@ modules:
       - --libdir=lib
       - -Dwerror=false
       - -Ddefault-wallpaper=true
-      - -Dxwayland=enabled
       - -Dtray=enabled
       - -Dgdk-pixbuf=enabled
     sources:
       - type: git
         url: https://github.com/swaywm/sway.git
-        tag: '1.9'
+        tag: '1.11'
     modules:
       - name: json-c
         buildsystem: cmake
@@ -69,7 +68,7 @@ modules:
         - -DENABLE_RDRAND=OFF
         sources:
         - type: git
-          tag: json-c-0.16-20220414
+          tag: json-c-0.18-20240915
           url: https://github.com/json-c/json-c.git
         cleanup:
         - "/lib/cmake"
@@ -78,20 +77,17 @@ modules:
         buildsystem: meson
         config-opts:
           - --libdir=lib
-          - -Dxwayland=enabled
           - -Dexamples=false
         sources:
           - type: git
             url: https://gitlab.freedesktop.org/wlroots/wlroots.git
-            tag: 0.17.0
-          - type: patch
-            path: wlroots-hwdata.patch
+            tag: 0.19.0
         modules:
           - name: wayland-protocols
             buildsystem: meson
             sources:
               - type: git
-                tag: 1.34
+                tag: 1.45
                 url: https://gitlab.freedesktop.org/wayland/wayland-protocols.git
           - name: libxcb-errors
             sources:
@@ -103,24 +99,19 @@ modules:
             sources:
               - type: git
                 url: https://gitlab.freedesktop.org/emersion/libliftoff.git
-                tag: v0.4.1
+                tag: v0.5.0
           - name: libdisplay-info
             buildsystem: meson
             sources:
               - type: git
                 url: https://gitlab.freedesktop.org/emersion/libdisplay-info.git
-                tag: 0.1.1
-              - type: patch
-                path: libdisplay-info-hwdata.patch
+                tag: 0.3.0
             modules:
               - name: hwdata
-                make-install-args:
-                  - DESTDIR=/app
-                  - blacklist=false
                 sources:
                   - type: git
                     url: https://github.com/vcrhonek/hwdata.git
-                    tag: v0.380
+                    tag: v0.398
           - name: meson
             buildsystem: simple
             build-commands:
@@ -128,7 +119,7 @@ modules:
             - python setup.py install --skip-build --prefix=/app --root=/ --optimize=1
             sources:
             - type: git
-              tag: 1.4.0
+              tag: 1.9.0
               url: https://github.com/mesonbuild/meson.git
             cleanup:
               - "*"
@@ -139,7 +130,7 @@ modules:
             sources:
               - type: git
                 url: https://git.sr.ht/~kennylevinsen/seatd
-                tag: 0.8.0
+                tag: 0.9.1
           - name: libdrm
             buildsystem: meson
             config-opts:
@@ -147,7 +138,7 @@ modules:
             sources:
               - type: git
                 url: https://gitlab.freedesktop.org/mesa/drm.git
-                tag: libdrm-2.4.120
+                tag: libdrm-2.4.125
           - name: libinput
             buildsystem: meson
             config-opts:
@@ -158,7 +149,7 @@ modules:
               - --libdir=lib
             sources:
               - type: git
-                tag: 1.25.0
+                tag: 1.29.0
                 url: https://gitlab.freedesktop.org/libinput/libinput.git
             modules:
               - name: mtdev
@@ -184,7 +175,7 @@ modules:
                   - --libdir=lib
                 sources:
                   - type: git
-                    tag: libevdev-1.13.1
+                    tag: libevdev-1.13.4
                     url: https://gitlab.freedesktop.org/libevdev/libevdev.git
           - name: wayland
             buildsystem: meson
@@ -195,7 +186,7 @@ modules:
             sources:
               - type: git
                 url: https://gitlab.freedesktop.org/wayland/wayland.git
-                tag: 1.22.0
+                tag: 1.23.93
           - name: xorg-xwayland
             buildsystem: meson
             config-opts:
@@ -206,18 +197,51 @@ modules:
             sources:
               - type: git
                 url: https://gitlab.freedesktop.org/xorg/xserver.git
-                tag: xwayland-23.2.4
+                tag: xwayland-24.1.8
             modules:
+              - name: pixman
+                buildsystem: meson
+                config-opts:
+                  - --libdir=lib
+                sources:
+                  - type: git
+                    tag: pixman-0.46.4
+                    url: https://gitlab.freedesktop.org/pixman/pixman.git
+              - name: xcb-util
+                sources:
+                  - type: git
+                    tag: xcb-util-0.4.1
+                    url: https://gitlab.freedesktop.org/xorg/lib/libxcb-util.git
+              - name: xcb-util-wm
+                sources:
+                  - type: git
+                    tag: xcb-util-wm-0.4.2
+                    url: https://gitlab.freedesktop.org/xorg/lib/libxcb-wm.git
+              - name: xcb-util-image
+                sources:
+                  - type: git
+                    tag: xcb-util-image-0.4.1
+                    url: https://gitlab.freedesktop.org/xorg/lib/libxcb-image.git
+              - name: xcb-util-keysyms
+                sources:
+                  - type: git
+                    tag: xcb-util-keysyms-0.4.1
+                    url: https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms.git
+              - name: xcb-util-renderutil
+                sources:
+                  - type: git
+                    tag: xcb-util-renderutil-0.3.10
+                    url: https://gitlab.freedesktop.org/xorg/lib/libxcb-render-util.git
               - name: libxcb
                 sources:
                   - type: git
-                    tag: libxcb-1.16.1
+                    tag: libxcb-1.17.0
                     url: https://gitlab.freedesktop.org/xorg/lib/libxcb.git
                 modules:
                   - name: xcb-proto
                     sources:
                       - type: git
-                        tag: xcb-proto-1.16.0
+                        tag: xcb-proto-1.17.0
                         url: https://gitlab.freedesktop.org/xorg/proto/xcbproto
               - name: libxcvt
                 buildsystem: meson
@@ -225,18 +249,18 @@ modules:
                   - --libdir=lib
                 sources:
                   - type: git
-                    tag: libxcvt-0.1.2
+                    tag: libxcvt-0.1.3
                     url: https://gitlab.freedesktop.org/xorg/lib/libxcvt.git
               - name: libxfont2
                 sources:
                   - type: git
-                    tag: libXfont2-2.0.6
+                    tag: libXfont2-2.0.7
                     url: https://gitlab.freedesktop.org/xorg/lib/libxfont.git
                 modules:
                   - name: xtrans
                     sources:
                       - type: git
-                        tag: xtrans-1.5.0
+                        tag: xtrans-1.6.0
                         url: https://gitlab.freedesktop.org/xorg/lib/libxtrans.git
                   - name: xorgproto
                     sources:
@@ -246,13 +270,13 @@ modules:
                   - name: fontenc
                     sources:
                       - type: archive
-                        url: https://xorg.freedesktop.org/archive/individual/lib/libfontenc-1.1.7.tar.gz
-                        sha256: 5e5f210329823f08f97bfe9fd5b4105070c789bc5aef88ce01d86d8203d4aa9f
+                        url: https://xorg.freedesktop.org/archive/individual/lib/libfontenc-1.1.8.tar.xz
+                        sha256: 7b02c3d405236e0d86806b1de9d6868fe60c313628b38350b032914aa4fd14c6
                         modules:
                           - name: xorg-font-util
                             sources:
                               - type: git
-                                tag: font-util-1.4.0
+                                tag: font-util-1.4.1
                                 url: https://gitlab.freedesktop.org/xorg/font/util.git
   - name: swayidle
     buildsystem: meson
@@ -271,12 +295,12 @@ modules:
         sources:
           - type: git
             url: https://gitlab.freedesktop.org/wayland/wayland.git
-            tag: 1.22.0
+            tag: 1.23.93
       - name: wayland-protocols
         buildsystem: meson
         sources:
           - type: git
-            tag: 1.34
+            tag: 1.45
             url: https://gitlab.freedesktop.org/wayland/wayland-protocols.git
   - name: package
     buildsystem: simple
