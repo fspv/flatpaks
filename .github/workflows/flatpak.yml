@@ -25,15 +25,6 @@ jobs:
       - name: Test Times
         run: echo "${{ env.date}}-${{ env.timestamp }}"
       - uses: actions/checkout@v4
-      # Docker is required by the docker/setup-qemu-action which enables emulation
-      - name: Install deps
-        run: |
-          dnf -y install docker
-      - name: Set up QEMU
-        id: qemu
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6.4
         with:
           bundle: sway.flatpak
