@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:gitlab.freedesktop.org)",
+      "Bash(./build.sh:*)",
+      "Bash(find:*)",
+      "Bash(flatpak install:*)",
+      "Bash(grep:*)",
+      "Bash(timeout:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(cp:*)",
+      "Bash(sed:*)",
+      "Bash(flatpak run:*)",
+      "Bash(mkdir:*)"
+    ],
+    "deny": []
+  }
+}
