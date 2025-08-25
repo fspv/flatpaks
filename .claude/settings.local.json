@@ -14,7 +14,11 @@
       "Bash(cp:*)",
       "Bash(sed:*)",
       "Bash(flatpak run:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(source:*)",
+      "Bash(mypy:*)",
+      "Bash(black:*)",
+      "Bash(isort:*)"
     ],
     "deny": []
   }

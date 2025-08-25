@@ -1,28 +1,8 @@
-#
-# how to use?
-#
-#   to test applications with this sway package set WAYLAND_DISPLAY correctly
-#     usually it will be WAYLAND_DISPLAY=$XDG_RUNTIME_DIR/app/org.swaywm.sway/wayland-1
-#   for example:
-#     $ env WAYLAND_DISPLAY=$XDG_RUNTIME_DIR/app/org.swaywm.sway/wayland-1 \
-#         alacritty
-#
-#   to use with other flatpak app you need also to give access to $XDG_RUNTIME_DIR/app/org.swaywm.sway
-#   for example:
-#     $ flatpak run \
-#         --filesystem=xdg-run/app/org.swaywm.sway \
-#         --env=WAYLAND_DISPLAY=$XDG_RUNTIME_DIR/app/org.swaywm.sway/wayland-1 \
-#         org.gnome.gedit
-#
 app-id: org.swaywm.sway
 runtime: org.freedesktop.Platform
 runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
 command: sway.sh
-build-options:
-  # hwdata doesn't respect all the env variables and places the package in the
-  # wrong location
-  append-pkg-config-path: /app/usr/share/pkgconfig
 finish-args:
   - --device=dri
   - --filesystem=host
@@ -39,9 +19,6 @@ finish-args:
   - --socket=pulseaudio
 cleanup:
   - /include
-  - /lib/pkgconfig
-  - /usr/share/pkgconfig
-  - /usr/share/hwdata
   - '*.pc'
   - '*.a'
   - '*.la'
@@ -156,12 +133,9 @@ modules:
                 config-opts:
                   - --disable-static
                 sources:
-                  # - type: git
-                  #   url: https://bitmath.org/git/mtdev.git
-                  #   tag: v1.1.6
                   - type: archive
-                    url: https://bitmath.org/code/mtdev/mtdev-1.1.6.tar.gz
-                    sha256: 1325f389a2f25cd5f5a8ea4d29aad24aa7c3ec30401d679400dd79eb9c0a8dbb
+                    url: https://bitmath.org/code/mtdev/mtdev-1.1.7.tar.gz
+                    sha256: a55bd02a9af4dd266c0042ec608744fff3a017577614c057da09f1f4566ea32c
                     x-checker-data:
                       type: anitya
                       project-id: 8868

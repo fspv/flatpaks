@@ -33,6 +33,21 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
     
+    - name: Check code formatting with black
+      run: |
+        source venv/bin/activate
+        black --check check_versions.py
+    
+    - name: Check import sorting with isort
+      run: |
+        source venv/bin/activate
+        isort --check-only --diff check_versions.py
+    
+    - name: Run type checking with mypy
+      run: |
+        source venv/bin/activate
+        mypy --strict check_versions.py
+    
     - name: Run version check script
       run: |
         source venv/bin/activate
