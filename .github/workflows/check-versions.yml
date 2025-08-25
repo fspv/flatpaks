@@ -1,0 +1,39 @@
+name: Check Dependency Versions
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday at midnight
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Create virtual environment
+      run: |
+        python -m venv venv
+        echo "Virtual environment created"
+    
+    - name: Activate virtual environment and install dependencies
+      run: |
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run version check script
+      run: |
+        source venv/bin/activate
+        python check_versions.py org.swaywm.sway/org.swaywm.sway.yaml
