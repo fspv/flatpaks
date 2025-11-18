@@ -1,2 +1,4 @@
 flatpak_build/
 sway.flatpak
+__pycache__/
+venv/
