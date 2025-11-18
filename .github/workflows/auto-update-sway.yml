@@ -1,0 +1,157 @@
+name: Auto Update and Release Sway
+
+on:
+  schedule:
+    # Run on the 1st of every month at 00:00 UTC
+    - cron: '0 0 1 * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    outputs:
+      updated: ${{ steps.update.outputs.updated }}
+      new_version: ${{ steps.update.outputs.new_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Check for sway updates
+        id: update
+        run: |
+          if python update_sway_version.py org.swaywm.sway/org.swaywm.sway.yaml; then
+            echo "updated=true" >> $GITHUB_OUTPUT
+            # Extract the new version from the YAML file
+            NEW_VERSION=$(grep -A 2 "name: sway" org.swaywm.sway/org.swaywm.sway.yaml | grep "tag:" | head -1 | awk '{print $2}' | tr -d "'\"")
+            echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "New sway version detected: $NEW_VERSION"
+          else
+            echo "updated=false" >> $GITHUB_OUTPUT
+            echo "No update needed"
+          fi
+
+      - name: Upload updated manifest
+        if: steps.update.outputs.updated == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated-manifest
+          path: org.swaywm.sway/org.swaywm.sway.yaml
+          retention-days: 1
+
+  build-flatpak:
+    needs: check-and-update
+    if: needs.check-and-update.outputs.updated == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
+      options: --privileged
+    strategy:
+      matrix:
+        arch:
+          - x86_64
+      fail-fast: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download updated manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: updated-manifest
+          path: org.swaywm.sway/
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6.4
+        with:
+          bundle: sway.flatpak
+          manifest-path: org.swaywm.sway/org.swaywm.sway.yaml
+          cache-key: flatpak-builder-sway-${{ needs.check-and-update.outputs.new_version }}
+          arch: ${{ matrix.arch }}
+
+      - name: Upload flatpak artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sway-flatpak-${{ matrix.arch }}
+          path: sway.flatpak
+          retention-days: 5
+
+  commit-and-release:
+    needs: [check-and-update, build-flatpak]
+    if: needs.check-and-update.outputs.updated == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download updated manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: updated-manifest
+          path: org.swaywm.sway/
+
+      - name: Download flatpak
+        uses: actions/download-artifact@v4
+        with:
+          name: sway-flatpak-x86_64
+          path: ./
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit changes
+        run: |
+          git add org.swaywm.sway/org.swaywm.sway.yaml
+          git commit -m "Update sway to version ${{ needs.check-and-update.outputs.new_version }}"
+          git push
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: sway-${{ needs.check-and-update.outputs.new_version }}
+          name: Sway ${{ needs.check-and-update.outputs.new_version }} Flatpak (${{ steps.date.outputs.date }})
+          body: |
+            Automated release of Sway Flatpak version ${{ needs.check-and-update.outputs.new_version }}
+
+            ## Changes
+            - Updated sway to version ${{ needs.check-and-update.outputs.new_version }}
+
+            ## Installation
+            Download the `sway.flatpak` file and install it with:
+            ```bash
+            flatpak install sway.flatpak
+            ```
+
+            ## Running
+            ```bash
+            flatpak run org.swaywm.sway
+            ```
+          draft: false
+          prerelease: false
+          files: ./sway.flatpak
