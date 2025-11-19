@@ -1,4 +1,5 @@
 flatpak_build/
+.flatpak-builder/
 sway.flatpak
 __pycache__/
 venv/
