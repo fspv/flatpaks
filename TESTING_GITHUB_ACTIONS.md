@@ -45,13 +45,19 @@ If Docker is not available, you can test the components manually:
 
 ```bash
 # Install dependencies
-pip install pyyaml
+pip install ruamel.yaml
 
-# Test the update script (will check for updates)
+# Test the update script (will check for updates to ALL dependencies)
 python3 update_sway_version.py org.swaywm.sway/org.swaywm.sway.yaml
 
+# The script will:
+# - Check all 31 git dependencies
+# - Report which ones need updates
+# - Filter out suspicious version tags
+# - Update the YAML file if needed
+
 # Exit codes:
-# 0 = update was made
+# 0 = updates were made
 # 1 = already up to date
 # 2 = error occurred
 ```
@@ -112,10 +118,11 @@ It can also be triggered manually via workflow_dispatch.
 
 ## How It Works
 
-1. The workflow checks the latest sway version from GitHub
-2. Compares with the current version in org.swaywm.sway.yaml
-3. If a new version is detected:
-   - Updates the YAML file
+1. The workflow checks the latest versions of all git dependencies (sway, wlroots, wayland, etc.)
+2. Compares each dependency with the current version in org.swaywm.sway.yaml
+3. If any updates are detected:
+   - Updates all outdated dependencies in the YAML file
+   - Filters out suspicious version tags (e.g., platform-specific suffixes)
    - Builds the flatpak
    - If build succeeds:
      - Commits the updated YAML to the repository

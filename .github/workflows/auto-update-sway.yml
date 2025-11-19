@@ -27,20 +27,20 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyyaml
+          pip install ruamel.yaml
 
-      - name: Check for sway updates
+      - name: Check for dependency updates
         id: update
         run: |
           if python update_sway_version.py org.swaywm.sway/org.swaywm.sway.yaml; then
             echo "updated=true" >> $GITHUB_OUTPUT
-            # Extract the new version from the YAML file
+            # Extract the sway version from the YAML file
             NEW_VERSION=$(grep -A 2 "name: sway" org.swaywm.sway/org.swaywm.sway.yaml | grep "tag:" | head -1 | awk '{print $2}' | tr -d "'\"")
             echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-            echo "New sway version detected: $NEW_VERSION"
+            echo "Updates detected for sway or dependencies"
           else
             echo "updated=false" >> $GITHUB_OUTPUT
-            echo "No update needed"
+            echo "No updates needed"
           fi
 
       - name: Upload updated manifest
@@ -122,7 +122,7 @@ jobs:
       - name: Commit changes
         run: |
           git add org.swaywm.sway/org.swaywm.sway.yaml
-          git commit -m "Update sway to version ${{ needs.check-and-update.outputs.new_version }}"
+          git commit -m "Update sway and dependencies (sway ${{ needs.check-and-update.outputs.new_version }})"
           git push
 
       - name: Get current date
@@ -140,7 +140,8 @@ jobs:
             Automated release of Sway Flatpak version ${{ needs.check-and-update.outputs.new_version }}
 
             ## Changes
-            - Updated sway to version ${{ needs.check-and-update.outputs.new_version }}
+            - Updated sway and/or dependencies to latest versions
+            - Sway version: ${{ needs.check-and-update.outputs.new_version }}
 
             ## Installation
             Download the `sway.flatpak` file and install it with:
